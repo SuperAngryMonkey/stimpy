@@ -1,0 +1,21 @@
+[Unit]
+Description=Stimpy - one-button Domino's carryout appliance
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=stimpy
+WorkingDirectory=/opt/stimpy
+ExecStart=/opt/stimpy/.venv/bin/python /opt/stimpy/app.py
+Restart=on-failure
+RestartSec=5
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/stimpy
+
+[Install]
+WantedBy=multi-user.target

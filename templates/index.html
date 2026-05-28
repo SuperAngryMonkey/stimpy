@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stimpy</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="{{ url_for('static', filename='monkey-theme.css') }}" rel="stylesheet">
+<style>
+  /* Stimpy-specific: things the shared theme doesn't cover */
+  body {
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .wrap { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  .epigraph {
+    font-size: 10px;
+    color: var(--txt2);
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+
+  /* The hero button — big, can't-miss-it. Built on .cmd-btn's language
+     but scaled up and filled, because this is THE action. */
+  .feed-btn {
+    width: 100%;
+    background: transparent;
+    border: 2px solid var(--acc3);
+    color: var(--acc3);
+    font-family: var(--fdisplay);
+    font-size: 48px;
+    letter-spacing: 6px;
+    padding: 28px;
+    margin-top: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.05s;
+  }
+  .feed-btn:hover:not(:disabled) {
+    background: rgba(0, 255, 136, 0.08);
+    box-shadow: 0 0 24px rgba(0, 255, 136, 0.25);
+  }
+  .feed-btn:active:not(:disabled) { transform: scale(0.99); }
+  .feed-btn:disabled { opacity: 0.4; cursor: wait; }
+
+  .order-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 6px;
+  }
+  .stat-row { margin-top: 14px; min-height: 18px; }
+  .last-row { margin-top: 18px; }
+
+  @media (max-width: 900px) {
+    .order-grid { grid-template-columns: repeat(2, 1fr); }
+    .feed-btn { font-size: 36px; letter-spacing: 4px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <span class="logo">STIMPY</span>
+      <span class="subtitle">Domino's Carryout Appliance</span>
+    </div>
+    <div class="hdr-right">
+      <span class="status-dot" id="dot"></span>
+      <span class="status-txt" id="reach">CHECKING LINK&hellip;</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">Standing Order</span>
+        <span class="panel-badge live">STORE #{{ store_id }}</span>
+      </div>
+
+      <div class="epigraph">"Happy happy joy joy." &mdash; Stimpson J. Cat</div>
+
+      <div class="order-grid">
+        <div class="fg-item">
+          <span class="fg-key">Pizza</span>
+          <span class="fg-val acc">Medium Pan</span>
+        </div>
+        <div class="fg-item">
+          <span class="fg-key">Toppings</span>
+          <span class="fg-val">Ham &middot; Pineapple</span>
+        </div>
+        <div class="fg-item">
+          <span class="fg-key">Method</span>
+          <span class="fg-val">Carryout</span>
+        </div>
+        <div class="fg-item">
+          <span class="fg-key">Payment</span>
+          <span class="fg-val">Cash @ pickup</span>
+        </div>
+      </div>
+
+      <button id="orderBtn" class="feed-btn" onclick="placeOrder()">Feed Me</button>
+
+      <div class="input-row" style="justify-content:flex-end;">
+        <button id="dryBtn" class="cmd-btn" onclick="dryRun()">Dry Run &middot; Validate &amp; Price</button>
+      </div>
+
+      <div id="status" class="cmd-out stat-row"></div>
+
+      {% if last_order.order_id %}
+      <div class="cmd-out last-row" style="color:var(--txt2);">
+        LAST ORDER &middot; {{ last_order.order_id }} &middot; {{ last_order.placed_at }} &middot; ${{ last_order.amount }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+<script>
+  function setStatus(msg, cls) {
+    const s = document.getElementById('status');
+    s.textContent = msg;
+    s.className = 'cmd-out stat-row ' + (cls || '');
+  }
+  function lock(on) {
+    document.getElementById('orderBtn').disabled = on;
+    document.getElementById('dryBtn').disabled = on;
+  }
+  async function post(path) {
+    lock(true);
+    try {
+      const r = await fetch(path, { method: 'POST' });
+      const d = await r.json();
+      setStatus(d.message, d.ok ? 'ok' : 'err');
+      if (d.ok && path === '/order') setTimeout(() => location.reload(), 2500);
+    } catch (e) {
+      setStatus('Request failed: ' + e, 'err');
+    } finally {
+      lock(false);
+    }
+  }
+  function placeOrder() {
+    if (!confirm("Place the order for real? You'll pay cash at pickup.")) return;
+    setStatus('Placing order\u2026', '');
+    post('/order');
+  }
+  function dryRun() {
+    setStatus('Validating & pricing\u2026', '');
+    post('/dryrun');
+  }
+
+  // Live Domino's reachability indicator in the header.
+  (async function checkLink() {
+    const dot = document.getElementById('dot');
+    const reach = document.getElementById('reach');
+    try {
+      const r = await fetch('/health');
+      const d = await r.json();
+      if (d.dominos_reachable) {
+        reach.textContent = 'DOMINO\u2019S LINK UP';
+        reach.style.color = 'var(--acc3)';
+        dot.style.background = 'var(--acc3)';
+        dot.style.boxShadow = '0 0 8px var(--acc3)';
+      } else {
+        reach.textContent = 'DOMINO\u2019S UNREACHABLE';
+        reach.style.color = 'var(--danger)';
+        dot.style.background = 'var(--danger)';
+        dot.style.boxShadow = '0 0 8px var(--danger)';
+      }
+    } catch (e) {
+      reach.textContent = 'SERVICE ERROR';
+      reach.style.color = 'var(--danger)';
+      dot.style.background = 'var(--danger)';
+      dot.style.boxShadow = '0 0 8px var(--danger)';
+    }
+  })();
+</script>
+</body>
+</html>
