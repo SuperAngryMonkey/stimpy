@@ -10,8 +10,9 @@ review. End-to-end validation pending first dry run on the target LXC.
   topping options, carryout override) — see DESIGN.md.
 - All order codes confirmed against live menu for store 3891 (2026-05-27):
   pizza `P12IPAZA`, ham `H`, pineapple `N`.
-- Target: LXC 206 (`stimpy`), Debian 12, residential IP. Domino's
-  reachability confirmed (HTTP 200 from store-locator on 2026-05-27).
+- Target: LXC 206 (`stimpy`) on **proxlab** (`10.0.1.9` / TS `100.105.71.57`),
+  Debian 12, residential IP. Domino's reachability confirmed (HTTP 200 from
+  store-locator on 2026-05-27).
 
 ## What works
 

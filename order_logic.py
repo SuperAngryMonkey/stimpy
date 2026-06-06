@@ -1,7 +1,7 @@
 """
 Order logic for Stimpy.
 
-Wraps the `pizzapi` library and works around three of its quirks:
+Wraps the `pizzapi` library and works around four of its quirks:
 
   1. It sends bare requests with no User-Agent. Domino's 403s datacenter
      IPs without browser-like headers, so we monkeypatch requests to inject
@@ -10,6 +10,11 @@ Wraps the `pizzapi` library and works around three of its quirks:
      literal "TODO: Implement item options"). We inject toppings into the
      product dict manually after add_item.
   3. `Order` defaults ServiceMethod to "Delivery". We force "Carryout".
+  4. `Menu.build_categories` raises "PRODUCT NOT FOUND" when Domino's
+     Categorization tree references coupon-only product codes (e.g.
+     `2XNY CouponPizza`) that don't appear in the flat menu. This kills
+     menu load before our order can build. We monkeypatch the method to
+     skip orphan refs instead of raising.
 
 Nothing here ever handles card data. Payment is Cash / pay-at-pickup.
 """
@@ -39,6 +44,30 @@ requests.post = _post
 
 # Import pizzapi AFTER patching so its module-level usage picks up the patch.
 from pizzapi import Address, Customer, Order, Store  # noqa: E402
+from pizzapi.menu import Menu, MenuCategory  # noqa: E402
+
+
+# --- Quirk 4: tolerate orphan product refs in Categorization ---
+# Domino's menus include coupon-category products like `2XNY CouponPizza`
+# that aren't in the flat menu_by_code. The library raises on these. We
+# replace build_categories with a forgiving version that skips them.
+def _build_categories_forgiving(self, category_data, parent=None):
+    category = MenuCategory(category_data, parent)
+    for subcategory in category_data.get("Categories", []):
+        category.subcategories.append(
+            _build_categories_forgiving(self, subcategory, category)
+        )
+    for product_code in category_data.get("Products", []):
+        product = self.menu_by_code.get(product_code)
+        if product is None:
+            # Orphan reference (coupon-only product, etc) — skip silently.
+            continue
+        product.categories.append(category)
+        category.products.append(product)
+    return category
+
+
+Menu.build_categories = _build_categories_forgiving
 
 
 class OrderError(Exception):

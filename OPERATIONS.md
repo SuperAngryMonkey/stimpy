@@ -1,6 +1,12 @@
 # OPERATIONS — Stimpy
 
-Deploy, run, verify, troubleshoot. Target: LXC 206 (`stimpy`), Debian 12.
+Deploy, run, verify, troubleshoot.
+
+**Target:** LXC 206 (`stimpy`) on **proxlab** (`10.0.1.9` / TS `100.105.71.57`),
+Debian 12.
+
+Reach the LXC from a Proxmox shell with `pct enter 206` on proxlab, or over
+SSH/Tailscale once joined.
 
 ## Deploy
 
