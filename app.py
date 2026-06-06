@@ -18,6 +18,7 @@ import config
 from order_logic import (
     OrderError,
     build_order,
+    list_specials,
     place_order,
     sniff_menu,
     validate_order,
@@ -110,6 +111,21 @@ def menu():
         return jsonify(error="pass ?q=<search term>"), 400
     try:
         return jsonify(sniff_menu(q))
+    except Exception as e:  # noqa: BLE001
+        return jsonify(error=str(e)), 502
+
+
+@app.route("/specials")
+def specials():
+    """Live coupons valid for Carryout at our store, cheapest first.
+
+    Read-only. Does NOT apply coupons — they have to match an order's exact
+    product configuration, and rotating coupons could silently stop matching.
+    Stimpy lists them; you decide whether one fits your standing order and
+    paste its code into config.py as PIZZA_COUPON (future).
+    """
+    try:
+        return jsonify(specials=list_specials("Carryout"))
     except Exception as e:  # noqa: BLE001
         return jsonify(error=str(e)), 502
 

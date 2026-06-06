@@ -147,3 +147,49 @@ def sniff_menu(query):
         if q in t.get("Name", "").lower():
             out["toppings"].append({"code": code, "name": t["Name"]})
     return out
+
+
+def list_specials(service_method="Carryout"):
+    """Return active coupons at store 3891 valid for the given service method.
+
+    Read-only. Does not attach coupons to any order. The user reads this and
+    decides whether to manually wire a coupon code into config.py.
+
+    Returns a list of dicts: {code, name, price, methods, bundle, effective}
+    sorted by price ascending (cheapest deal first).
+    """
+    r = requests.get(
+        f"https://order.dominos.com/power/store/{config.STORE_ID}/menu"
+        "?lang=en&structured=true",
+        timeout=15,
+    )
+    r.raise_for_status()
+    m = r.json()
+
+    out = []
+    for code, v in m.get("Coupons", {}).items():
+        tags = v.get("Tags", {}) or {}
+        methods = tags.get("ValidServiceMethods", []) or []
+        # Filter to coupons valid for our service method (Carryout by default).
+        if service_method and service_method not in methods:
+            continue
+        # Skip coupons with no human name — they're internal upsell stubs.
+        name = (v.get("Name") or "").strip()
+        if not name:
+            continue
+        try:
+            price_f = float(v.get("Price") or 0)
+        except (TypeError, ValueError):
+            price_f = 0.0
+        out.append({
+            "code": code,
+            "name": name,
+            "price": v.get("Price") or "",
+            "price_f": price_f,  # numeric, for sorting
+            "methods": methods,
+            "bundle": bool(v.get("Bundle")),
+            "effective": tags.get("EffectiveOn", ""),
+        })
+    # Cheapest first, but push $0 entries (no advertised price) to the end.
+    out.sort(key=lambda x: (x["price_f"] == 0, x["price_f"]))
+    return out

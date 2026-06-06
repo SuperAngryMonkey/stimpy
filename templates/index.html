@@ -55,6 +55,34 @@
   .stat-row { margin-top: 14px; min-height: 18px; }
   .last-row { margin-top: 18px; }
 
+  /* Specials panel — collapsible. Below the order; never competes with Feed Me. */
+  .specials-panel { margin-top: 14px; }
+  .specials-toggle {
+    background: transparent; border: var(--border); color: var(--txt2);
+    font-family: var(--fmono); font-size: 9px; letter-spacing: 2px;
+    padding: 8px 14px; cursor: pointer; text-transform: uppercase;
+    width: 100%; text-align: left; transition: color 0.15s, border-color 0.15s;
+  }
+  .specials-toggle:hover { color: var(--acc2); border-color: rgba(255,107,53,0.3); }
+  .specials-toggle .chev { float: right; transition: transform 0.2s; }
+  .specials-toggle.open .chev { transform: rotate(90deg); }
+  .specials-list { display: none; margin-top: 10px; }
+  .specials-list.open { display: block; }
+  .special {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 14px; align-items: center;
+    padding: 10px 12px;
+    background: var(--c3);
+    border-left: 2px solid var(--acc2);
+    margin-bottom: 6px;
+  }
+  .special .code { font-size: 11px; color: var(--acc2); letter-spacing: 1px; }
+  .special .name { font-size: 11px; color: var(--txt); }
+  .special .price { font-family: var(--fdisplay); font-size: 20px; color: var(--acc3); letter-spacing: 1px; }
+  .special.no-price .price { color: var(--txt3); font-family: var(--fmono); font-size: 10px; }
+  .specials-empty { font-size: 10px; color: var(--txt3); padding: 10px 12px; }
+
   @media (max-width: 900px) {
     .order-grid { grid-template-columns: repeat(2, 1fr); }
     .feed-btn { font-size: 36px; letter-spacing: 4px; }
@@ -115,6 +143,15 @@
         LAST ORDER &middot; {{ last_order.order_id }} &middot; {{ last_order.placed_at }} &middot; ${{ last_order.amount }}
       </div>
       {% endif %}
+
+      <div class="specials-panel">
+        <button class="specials-toggle" id="specToggle" onclick="toggleSpecials()">
+          <span class="chev">&rsaquo;</span> Today&rsquo;s Specials <span id="specCount" style="color:var(--txt3); margin-left:6px;"></span>
+        </button>
+        <div class="specials-list" id="specList">
+          <div class="specials-empty">Loading&hellip;</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -176,6 +213,48 @@
       dot.style.boxShadow = '0 0 8px var(--danger)';
     }
   })();
+
+  // Specials panel — fetch once on load, collapsed by default.
+  let specialsData = [];
+  async function loadSpecials() {
+    try {
+      const r = await fetch('/specials');
+      const d = await r.json();
+      specialsData = d.specials || [];
+      document.getElementById('specCount').textContent = '(' + specialsData.length + ')';
+      renderSpecials();
+    } catch (e) {
+      document.getElementById('specList').innerHTML =
+        '<div class="specials-empty">Couldn\u2019t load specials: ' + e + '</div>';
+    }
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+  function renderSpecials() {
+    const list = document.getElementById('specList');
+    if (specialsData.length === 0) {
+      list.innerHTML = '<div class="specials-empty">No carryout specials active right now.</div>';
+      return;
+    }
+    list.innerHTML = specialsData.map(s => {
+      const hasPrice = s.price && parseFloat(s.price) > 0;
+      const priceText = hasPrice ? ('\u0024' + s.price) : 'see store';
+      const klass = 'special' + (hasPrice ? '' : ' no-price');
+      return '<div class="' + klass + '">'
+        + '<div class="code">' + esc(s.code) + '</div>'
+        + '<div class="name">' + esc(s.name) + '</div>'
+        + '<div class="price">' + priceText + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  function toggleSpecials() {
+    document.getElementById('specToggle').classList.toggle('open');
+    document.getElementById('specList').classList.toggle('open');
+  }
+  loadSpecials();
 </script>
 </body>
 </html>
