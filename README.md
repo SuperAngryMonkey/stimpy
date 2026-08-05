@@ -22,6 +22,14 @@ pizza_order follows the christian contract: confirm=True is only ever
 set after the human explicitly approves that specific order. Payment is
 cash at pickup — no card data exists anywhere in ren or stimpy.
 
+## Residential IP required
+
+Ren itself runs anywhere on the tailnet, but stimpy — the box that
+actually talks to Dominos — must egress from a residential IP. Dominos
+blocks business, datacenter, and cloud IPs outright. Do not relocate
+stimpy to hosted infrastructure; ren will start returning 403s through
+no fault of its own.
+
 ## Runtime
 
 Registered in Claude Desktop (claude_desktop_config.json) pointing at
