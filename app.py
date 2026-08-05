@@ -51,7 +51,8 @@ def index():
 def order():
     """Validate then place the hardcoded order. Cash / pay-at-pickup."""
     try:
-        order_obj, customer = build_order()
+        coupon = request.args.get("coupon") or None
+        order_obj, customer = build_order(coupon_code=coupon)
 
         # Always validate before placing — catches store-closed,
         # item-unavailable, and code-drift before committing.

@@ -54,3 +54,11 @@ payment is cash-at-pickup (no stored card to drain).
 
 - systemd unit runs as unprivileged `stimpy` user with `NoNewPrivileges`,
   `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`.
+
+## PII split (2026-08-05)
+
+Customer identity (name, address, phone, email) lives in config_local.py,
+which is gitignored. The repo tracks config_local.example.py with placeholder
+values only. Commits before 2026-08-05 predate this split and contain the
+old hardcoded identity; the repo is private and stays private unless history
+is rewritten.

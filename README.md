@@ -27,7 +27,7 @@ Domino's ordering API end to end. It can.
 |---|---|
 | Pizza | `P12IPAZA` — Medium (12") Handmade Pan |
 | Toppings | `H` Ham (whole, normal) · `N` Pineapple (whole, normal) |
-| Store | #3891 (nearest carryout to the home address) |
+| Store | #3891 (carryout) |
 | Service | Carryout |
 | Payment | Cash at pickup — **no card data touches this app** |
 

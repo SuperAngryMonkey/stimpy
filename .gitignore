@@ -6,3 +6,4 @@ venv/
 .env
 *.log
 /tmp/menu.json
+config_local.py
