@@ -13,6 +13,13 @@ Domino's ordering API end to end. It can.
 
 ---
 
+## Claude access (ren MCP)
+
+Claude drives stimpy through **ren** (~/Projects/ren on the Mac Studio),
+a stdio MCP server exposing pizza_status / pizza_specials / pizza_dryrun /
+pizza_order over the tailnet. pizza_order hard-refuses without explicit
+human confirmation. See the ren README for install and registration.
+
 ## Residential IP required
 
 **The unofficial Dominos API cannot be reached from a business, datacenter,
