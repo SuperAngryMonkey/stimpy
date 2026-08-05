@@ -78,8 +78,14 @@ def _store():
     return Store({"StoreID": config.STORE_ID}, country="us")
 
 
-def build_order():
-    """Construct the canonical Stimpy order. Returns (Order, Customer)."""
+def build_order(coupon_code=None):
+    """Construct the canonical Stimpy order. Returns (Order, Customer).
+
+    Optionally attaches a coupon by code. Coupon is appended to the order's
+    Coupons list; whether Domino's actually applies it is determined at
+    validate/price time — they'll accept-with-discount, accept-without-effect,
+    or reject (Status: -1).
+    """
     customer = Customer(
         config.CUSTOMER_FIRST,
         config.CUSTOMER_LAST,
@@ -105,6 +111,11 @@ def build_order():
 
     # Quirk 2: inject toppings manually as Options.
     item["Options"] = dict(config.PIZZA_TOPPINGS)
+
+    # Optionally attach a coupon. Direct dict append — library's add_coupon()
+    # looks up menu.variants which doesn't contain coupon entries.
+    if coupon_code:
+        order.data["Coupons"].append({"Code": str(coupon_code), "Qty": 1})
 
     return order, customer
 

@@ -14,6 +14,13 @@ review. End-to-end validation pending first dry run on the target LXC.
   Debian 12, residential IP. Domino's reachability confirmed (HTTP 200 from
   store-locator on 2026-05-27).
 
+> **2026-07-20 correction:** Stimpy's actual Tailscale IP is `100.84.231.64`
+> (verified from proxlab via `pct exec 206 -- tailscale ip -4`). The
+> `100.105.71.57` above is stale. Container is running; app is not
+> daemonized yet — `stimpy.service` exists in `/opt/stimpy/` but isn't
+> installed to systemd or started. Next session: install the unit and
+> flip Heimdall's `/dominos` route to `enabled: true`.
+
 ## What works
 
 - Modules compile clean.

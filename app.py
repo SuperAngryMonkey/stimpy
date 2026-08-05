@@ -86,16 +86,25 @@ def order():
         return jsonify(ok=False, message=f"Unexpected: {e}"), 500
 
 
-@app.route("/dryrun", methods=["POST"])
+@app.route("/dryrun", methods=["GET", "POST"])
 def dryrun():
-    """Validate + price only. Never places. For testing the loop safely."""
+    """Validate + price only. Never places. For testing the loop safely.
+
+    Optional ?coupon=CODE attaches a coupon for the test — lets us probe
+    candidate coupons (e.g. 9204 "Medium 2-Topping Pan $9.99") against our
+    actual order without committing anything to config.py.
+    """
+    coupon = request.args.get("coupon") or None
     try:
-        order_obj, _ = build_order()
+        order_obj, _ = build_order(coupon_code=coupon)
         price = validate_order(order_obj)
-        return jsonify(ok=True, amount=price, message=f"Dry run OK. Quote: ${price}")
+        msg = f"Dry run OK. Quote: ${price}"
+        if coupon:
+            msg += f"  (coupon {coupon} attached)"
+        return jsonify(ok=True, amount=price, coupon=coupon, message=msg)
     except Exception as e:  # noqa: BLE001
         log.exception("Dry run failed")
-        return jsonify(ok=False, message=str(e)), 400
+        return jsonify(ok=False, coupon=coupon, message=str(e)), 400
 
 
 @app.route("/menu")
