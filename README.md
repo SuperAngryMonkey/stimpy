@@ -13,6 +13,15 @@ Domino's ordering API end to end. It can.
 
 ---
 
+## Residential IP required
+
+**The unofficial Dominos API cannot be reached from a business, datacenter,
+or cloud IP.** Dominos blocks non-residential egress outright (403s, even
+with a browser User-Agent). This is why stimpy lives on an LXC on `proxlab`
+behind a home connection — and why it can never move to Cloudflare Workers,
+a VPS, or any hosted runtime. If requests suddenly 403, check what IP you
+are egressing from before debugging anything else.
+
 ## What it does
 
 1. Serves a single page on port 5000.

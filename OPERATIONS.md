@@ -91,3 +91,10 @@ curl -s -X POST http://localhost:5000/dryrun   # re-verify
 curl -s "http://localhost:5000/menu?q=<term>"
 ```
 Read the new code, update `config.py`, restart, dry-run.
+
+## If everything 403s
+
+Dominos rejects business/datacenter/cloud IPs. Stimpy must egress from a
+residential connection (proxlab at home). Verify with:
+`curl -s https://ifconfig.me` from the LXC — if that IP is not the home
+WAN address, fix routing before touching the app.
