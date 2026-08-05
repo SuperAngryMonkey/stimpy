@@ -30,7 +30,39 @@ blocks business, datacenter, and cloud IPs outright. Do not relocate
 stimpy to hosted infrastructure; ren will start returning 403s through
 no fault of its own.
 
-## Runtime
+## Install
 
-Registered in Claude Desktop (claude_desktop_config.json) pointing at
-.venv/bin/python server.py with STIMPY_URL in env.
+Requires Homebrew Python 3.10+ (built against 3.14). The mcp package is
+pinned <2 — mcp 2.0 moved FastMCP and breaks the import.
+
+```
+cd ~/Projects/ren
+/opt/homebrew/bin/python3.14 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+## Claude Desktop registration
+
+Add to ~/Library/Application Support/Claude/claude_desktop_config.json
+under mcpServers, then fully quit (Cmd-Q) and relaunch Claude Desktop:
+
+```json
+"ren": {
+  "command": "/Users/jamessmith/Projects/ren/.venv/bin/python",
+  "args": ["/Users/jamessmith/Projects/ren/server.py"],
+  "env": { "STIMPY_URL": "http://100.84.231.64:5000" }
+}
+```
+
+STIMPY_URL points at the stimpy LXC over the tailnet; change it if the
+appliance moves (residential egress only — see above).
+
+## Usage flow
+
+1. pizza_status — confirm stimpy is up and Dominos is reachable
+2. pizza_specials — see live carryout coupons
+3. pizza_dryrun(coupon) — price the order without placing it
+4. pizza_order(confirm=True, coupon) — place it, only after the human
+   explicitly says go. Cash at pickup.
+
+Verified 2026-08-05: rack $16.04, coupon 9204 → $10.69.
