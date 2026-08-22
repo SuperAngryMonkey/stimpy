@@ -89,3 +89,11 @@ The button places a real order with real consequences (a real pizza, a real
 $X you owe at a real counter). The confirm dialog and the cash-at-pickup model
 are the only safety rails. Don't expose this to the open internet. See
 SECURITY.md.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Domino's is a trademark of its owner; this project is unaffiliated and uses an
+unofficial API. Ren and Stimpy are trademarks of their respective owner; the
+name here is affectionate reference only.
