@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 Format loosely follows Keep a Changelog. Dates are ISO 8601.
 
+## [0.2.0] — 2026-10-29
+
+### Added
+- Delivery: `?mode=delivery` on /order, /dryrun, /specials; delivering store
+  auto-resolved from the locator (or `DELIVERY_STORE_ID`); tip from
+  `DELIVERY_TIP`; `/dryrun` reports `due` = quote + tip.
+- Card / gift-card payment: `?pay=card|giftcard`, read from
+  `payment_local.py` only (ADR 0004). `set_payment.py` interactive setup
+  (masked, Luhn/type-checked, writes 0600). `payment.scrub()` on every
+  Domino's response. `.githooks/pre-commit` digit-run guard.
+- ren MCP: `mode` and `pay` args on pizza_dryrun / pizza_order / pizza_specials.
+- `ADDR_TYPE`, `ADDR_UNIT`, `DELIVERY_STORE_ID` optional in config_local.py.
+
+### Changed
+- ADR 0002 superseded by ADR 0004; defaults (carryout, cash) unchanged.
+- `place_order` bypasses pizzapi `Order.place()` (which resets Payments to Cash).
+
 ## [0.1.0] — 2026-05-27
 
 ### Added

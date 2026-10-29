@@ -7,14 +7,16 @@
 
 This app places real, money-costing orders on an unauthenticated button
 press. The only safety rails are a browser confirm dialog and the fact that
-payment is cash-at-pickup (no stored card to drain).
+payment defaults to cash-at-pickup. Since ADR 0004 a card or gift card MAY
+be configured on the host; if so, `pay=card` orders are real charges.
 
 ## What this app does NOT handle
 
-- **No card data. Ever.** Payment type is hardcoded `Cash`. There is no field,
-  variable, or code path that accepts, stores, or transmits a card number,
-  CVV, or expiry. If you ever want card payment, that is a deliberate redesign
-  with its own security review — not a config tweak.
+- **No card data over the wire or in the repo.** A card may exist ONLY in
+  `payment_local.py` (gitignored, 0600, service-user owned, written by
+  `set_payment.py`). No route, MCP tool, env var or config field accepts a
+  card number; responses are scrubbed (`payment.scrub`) before logging;
+  a pre-commit hook blocks digit runs. Prefer a gift card. See ADR 0004.
 - **No login / no auth.** Anyone who can reach port 5000 can order a pizza on
   your dime. This is acceptable ONLY because the app is bound to a private
   LXC on your home network / tailnet.

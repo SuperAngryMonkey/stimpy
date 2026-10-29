@@ -12,15 +12,20 @@ tailnet.
 | Tool | Effect |
 |---|---|
 | pizza_status | Liveness + Dominos reachability + last order |
-| pizza_specials | Live carryout coupons, read-only |
-| pizza_dryrun(coupon) | Validate + price, never places |
-| pizza_order(confirm, coupon) | Places the real order; hard-refuses without confirm=True |
+| pizza_specials(mode) | Live coupons for carryout or delivery, read-only |
+| pizza_dryrun(coupon, mode, pay) | Validate + price, never places; reports total due |
+| pizza_order(confirm, coupon, mode, pay) | Places the real order; hard-refuses without confirm=True |
+
+`mode` = carryout (default) / delivery. `pay` = cash (default) / card /
+giftcard. ren carries no card parameters: the card is configured once on
+the stimpy host with `set_payment.py` and never leaves it.
 
 ## Safety
 
 pizza_order follows the christian contract: confirm=True is only ever
 set after the human explicitly approves that specific order. Payment is
-cash at pickup — no card data exists anywhere in ren or stimpy.
+cash by default. With pay=card the configured card is charged, so the
+human must approve mode + payment, not just "order".
 
 ## Residential IP required
 
@@ -63,6 +68,6 @@ appliance moves (residential egress only — see above).
 2. pizza_specials — see live carryout coupons
 3. pizza_dryrun(coupon) — price the order without placing it
 4. pizza_order(confirm=True, coupon) — place it, only after the human
-   explicitly says go. Cash at pickup.
+   explicitly says go. Add mode="delivery" / pay="card" only when asked.
 
 Verified 2026-08-05: rack $16.04, coupon 9204 → $10.69.

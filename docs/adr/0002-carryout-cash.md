@@ -1,6 +1,6 @@
 # ADR 0002 — Carryout with cash payment
 
-**Status:** Accepted
+**Status:** Superseded by ADR 0004 (2026-10-29) — still the default behaviour
 **Date:** 2026-05-27
 
 ## Context

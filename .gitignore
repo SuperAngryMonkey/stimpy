@@ -7,4 +7,5 @@ venv/
 *.log
 /tmp/menu.json
 config_local.py
+payment_local.py
 mcp/.venv/

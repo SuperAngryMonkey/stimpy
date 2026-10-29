@@ -42,7 +42,7 @@ quirks Stimpy works around in `order_logic.py`:
    override to `Carryout` so no delivery address validation / driver is
    involved, and payment can be cash-at-pickup.
 
-## Why cash / carryout
+## Why cash / carryout (the defaults — see ADR 0004 for delivery + card)
 
 Carryout + cash means the app never has to handle a card. That removes the
 entire class of payment-security risk from a POC that's fundamentally about

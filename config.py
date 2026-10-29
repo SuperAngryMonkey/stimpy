@@ -5,13 +5,15 @@ This is a proof-of-concept appliance: one user, one pizza, one store.
 Everything that defines "the order" lives here so there is exactly one
 place to change it. No env vars, no database, no abstraction. By design.
 
-The one exception is identity: name, address, phone, and email live in
-config_local.py, which is gitignored so PII is never tracked. Copy
-config_local.example.py to config_local.py on each deploy target.
+Two exceptions, both machine-local and gitignored:
+  config_local.py   — identity: name, address, phone, email (PII)
+  payment_local.py  — card or gift card, written by set_payment.py (ADR 0004)
+Copy config_local.example.py to config_local.py on each deploy target.
 """
 
 # --- Identity (PII) — machine-local, never committed ---
 try:
+    import config_local as _local
     from config_local import (
         CUSTOMER_FIRST,
         CUSTOMER_LAST,
@@ -27,6 +29,11 @@ except ImportError as e:
         "config_local.py is missing. Copy config_local.example.py to "
         "config_local.py and fill in name/address/phone/email."
     ) from e
+
+# Optional identity fields — older config_local.py files lack these.
+ADDR_TYPE = getattr(_local, "ADDR_TYPE", "House")  # House | Apartment | Business
+ADDR_UNIT = getattr(_local, "ADDR_UNIT", "")  # apt/suite, delivery only
+DELIVERY_STORE_ID = getattr(_local, "DELIVERY_STORE_ID", "")  # blank = auto-resolve
 
 # --- Store (verified against live store-locator, 2026-05-27) ---
 STORE_ID = "3891"  # Dominos carryout store for this deployment
@@ -44,11 +51,13 @@ PIZZA_TOPPINGS = {
     "H": {"1/1": "1.0"},  # Ham, whole, normal
     "N": {"1/1": "1.0"},  # Pineapple, whole, normal
 }
-PIZZA_LABEL = "Medium Handmade Pan \u2014 Ham & Pineapple (Carryout)"
+PIZZA_LABEL = "Medium Handmade Pan — Ham & Pineapple"
 
 # --- Service ---
-SERVICE_METHOD = "Carryout"  # library defaults to Delivery; we override
-PAYMENT = "Cash"  # pay at pickup — no card data ever enters this app
+# Default service method. Each request may override with ?mode=carryout|delivery.
+SERVICE_METHOD = "Carryout"
+# Default payment comes from payment_local.py (PAYMENT_TYPE); absent file = Cash.
+# Each request may override with ?pay=cash|card|giftcard (ADR 0004).
 
 # --- Runtime ---
 PORT = 5000

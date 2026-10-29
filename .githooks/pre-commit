@@ -1,0 +1,19 @@
+#!/bin/sh
+# Refuse to commit anything that looks like a payment card number (13-19
+# digit run) or the payment_local.py file itself. See ADR 0004.
+# Enable once per clone:  git config core.hooksPath .githooks
+
+if git diff --cached --name-only | grep -qx 'payment_local.py'; then
+  echo "pre-commit: payment_local.py is staged. Refusing." >&2
+  exit 1
+fi
+
+hits=$(git diff --cached -U0 --no-color | grep '^+' | grep -v '^+++' \
+  | grep -E '(^|[^0-9])[0-9]{13,19}([^0-9]|$)')
+if [ -n "$hits" ]; then
+  echo "pre-commit: staged changes contain a 13-19 digit number run:" >&2
+  echo "$hits" | sed 's/[0-9]\{13,19\}/<redacted>/g' >&2
+  echo "If this is not a card number, commit with --no-verify." >&2
+  exit 1
+fi
+exit 0

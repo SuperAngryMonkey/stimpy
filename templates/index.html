@@ -122,11 +122,11 @@
         </div>
         <div class="fg-item">
           <span class="fg-key">Method</span>
-          <span class="fg-val">Carryout</span>
+          <span class="fg-val">Carryout (default)</span>
         </div>
         <div class="fg-item">
           <span class="fg-key">Payment</span>
-          <span class="fg-val">Cash @ pickup</span>
+          <span class="fg-val">Cash @ pickup (default)</span>
         </div>
       </div>
 
@@ -179,7 +179,7 @@
     }
   }
   function placeOrder() {
-    if (!confirm("Place the order for real? You'll pay cash at pickup.")) return;
+    if (!confirm("Place the order for real? Default: carryout, cash at pickup.")) return;
     setStatus('Placing order\u2026', '');
     post('/order');
   }
